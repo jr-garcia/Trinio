@@ -8,6 +8,6 @@ uifile = './tred/ui_files/main.ui'
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main = MainUI(uifile, None)
+    main = MainUI(uifile, app, None)
     main.show()
     exit(app.exec_())

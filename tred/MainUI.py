@@ -13,19 +13,44 @@ from PySide.QtCore import Qt
 from cycgkit.cgtypes import vec3
 
 from .view3D import View, ViewSides
+from .codeEdit import CodeEditor, TabbedEditor, ConsolePanel
 
 
 class MainUI(MainWindow):
-    def __init__(self, file, parent=None):
+    def __init__(self, file, app, parent):
         super(MainUI, self).__init__(file, parent)
+        self.app = app
         self.engine = None
         self.backend = OGL3Backend
         self.scene_3d = None
+        self.codeEdit = self.createEditor()
+        self.console = ConsolePanel(self)
         self.views = []
 
         self.prepareEngine()
         self.replaceViews()
+        self.replaceEditor()
+        self.replaceConsole()
         self.timer = self.startTimer(1000 / 30)
+
+    def createEditor(self):
+        editor = TabbedEditor(self)
+
+        editor.setMinimumSize(200, 200)
+        editor.show()
+        editor.create_new_document('untitled_', '.py')
+
+        return editor
+
+    def replaceEditor(self):
+        self.textEdit.setParent(None)
+        self.textEdit.deleteLater()
+        self.splitter_editor.insertWidget(0, self.codeEdit)
+
+    def replaceConsole(self):
+        self.console_placeholder.setParent(None)
+        self.console_placeholder.deleteLater()
+        self.splitter_editor.insertWidget(1, self.console)
 
     def replaceViews(self):
         for i in range(1, 5):
@@ -77,6 +102,8 @@ class MainUI(MainWindow):
         if self.tab_scenes.isVisible():
             for v in self.views:
                 v.update3d()
+        # elif self.tab_code.isVisible():
+        #     self.codeEdit.openConsole()
 
     def addLights(self):
         self.dlight = self.scene_3d.addLight(0, vec3(100000.0, 10000.0, 100000.0), vec3(45, 45, 0))
